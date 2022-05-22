@@ -28,8 +28,7 @@ class GoodsList {
             if (marker === true) {
                 result.push(this.#goods[i]);
             };
-
-        }
+        };
         if(!this.sortPrice) {
             return result;
         }
@@ -39,8 +38,14 @@ class GoodsList {
         return result.sort((elem_1, elem_2) => elem_2.price - elem_1.price);
     };
     add(good) {
-        this.goods.push(good);
-    }
+        if (!(this.#goods.includes(good.id))){
+            this.#goods.push(good);
+        }
+    };
+    remove(goodId){
+        goodPosition = this.#goods.findIndex(good => good.id == goodId);
+        this.#goods.splice(goodPosition, 1);
+    };
 };
 
 class BasketGood extends Good {
@@ -52,8 +57,51 @@ class BasketGood extends Good {
 
 class Basket {
     constructor(goods) {
-        this.goods = [goods];
+        this.goods = goods;
     };
+    get totalAmount(){
+        this.result = 0
+        for (let i = 0; i < this.goods.length; i++){
+            this.result += this.goods[i].amount;
+        };
+        return this.result;
+    };
+    get totalPrice(){
+        this.result = 0
+        for (let i = 0; i < this.goods.length; i++){
+            this.result += this.goods[i].price * this.goods[i].amount;
+        };
+        return this.result;
+    };
+
+    add(good, amount) {
+        let goodPosition = this.goods.findIndex(goods => goods.id == good.id);
+        if (goodPosition === -1) {
+            good.amount = amount;
+            this.goods.push(good);
+        }
+        else {
+            this.goods[goodPosition].amount += amount;
+        };
+    };
+
+    remove(good, amount) {
+        goodPosition = this.goods.findIndex(goods => goods.id == good.id);
+        this.goods[goodPosition].amount -= amount;
+        if (this.goods[goodPosition].amount == 0){
+            this.goods.splice(goodPosition, 1);
+        };
+        
+    };
+
+    clearBasket() {
+        this.goods.splice(0, this.goods.length)
+    };
+
+    removeUnavailable(){
+        this.goods = this.goods.filter((good) => good.available === true);
+    };
+
 };
 
 
@@ -66,22 +114,20 @@ function main() {
         new Good(00005, 'Брюки', 'Нарядные, мужские', [50,52,54], 2500, true),
     ];
 
-
     let goodsList = new GoodsList(goods, 'Платье', true, true);
-
-
     console.log("goodsList.list", goodsList.list);
 
     let basketGood = [
         new BasketGood(goods[0], 1),
         new BasketGood(goods[3], 2),
-        new BasketGood(goods[4], 1),
     ];
-    // console.log(basketGood);  
+    basket =  new Basket(basketGood);
+    basket.add(goods[4], 1);
+    console.log(basket); 
+    console.log('Итоговое кол-во товаров = ', basket.totalAmount);
+    console.log('Итоговая сумма заказа = ', basket.totalPrice, 'руб.');  
 
 };
 
 
 main(); 
-
-// node 3.1_index
